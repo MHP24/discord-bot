@@ -7,7 +7,7 @@ import { Routes } from 'discord.js';
 
 dotenv.config();
 
-const getCommands = () => {
+export const getCommands = () => {
   const baseCommandsPath = '../../commands';
 
   return (fs.readdirSync(path.join(__dirname, baseCommandsPath)).map((category) => {
