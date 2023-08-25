@@ -3,30 +3,20 @@ import {
   Collection,
   Events,
   GatewayIntentBits,
-  REST,
-  Routes
 } from 'discord.js';
-import { command } from './commands/ping';
 import { TSlashCommand } from './types';
 import dotenv from 'dotenv';
+import { enableCommands, loadCommands } from './helpers';
 
 dotenv.config();
 
-// import path from 'node:path';
-// import fs from 'fs';
-
 (async () => {
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-  client.slashCommands = new Collection();
-  const { data } = command;
+  const commands = await loadCommands();
 
-  client.slashCommands.set(data.name, command);
-  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
-
-  await rest.put(
-    Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!),
-    { body: [data] }
-  );
+  if (commands) {
+    client.slashCommands = await enableCommands(commands);
+  }
 
   client.once(Events.ClientReady, (c) => {
     console.log(`Ready! Logged in as ${c.user.tag}`);
