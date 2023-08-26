@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { http } from '../../adapters';
+import { httpCredentials } from '../../config';
 
 export const command = {
   data: new SlashCommandBuilder().
@@ -7,7 +8,7 @@ export const command = {
     .setDescription('Generates a random dog'),
   run: async (interaction: CommandInteraction) => {
     try {
-      const { message: url } = await http.get('https://dog.ceo/api/breeds/image/random');
+      const { message: url } = await http.get(httpCredentials.dogApiUrl);
       const response = new EmbedBuilder()
         .setColor(0x0099FF)
         .setTitle('Here\'s your dog :pouting_cat:')

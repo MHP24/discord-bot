@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { http } from '../../adapters';
+import { httpCredentials } from '../../config';
 
 export const command = {
   data: new SlashCommandBuilder().
@@ -7,7 +8,7 @@ export const command = {
     .setDescription('Generates a random cat'),
   run: async (interaction: CommandInteraction) => {
     try {
-      const [data] = await http.get('https://api.thecatapi.com/v1/images/search');
+      const [data] = await http.get(httpCredentials.catApiUrl);
       const { url } = data;
       const response = new EmbedBuilder()
         .setColor(0x0099FF)
