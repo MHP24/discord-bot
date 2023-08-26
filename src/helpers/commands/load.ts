@@ -1,11 +1,9 @@
 import path from 'node:path';
 import fs from 'fs';
-import dotenv from 'dotenv';
 import { Collection, REST } from 'discord.js';
 import { TLoadCommands, TSlashCommand } from '../../types';
 import { Routes } from 'discord.js';
-
-dotenv.config();
+import { discordConfig } from '../../config';
 
 export const getCommands = () => {
   const baseCommandsPath = '../../commands';
@@ -34,7 +32,7 @@ const loadCommand = async (commandPath: string): Promise<TSlashCommand | null> =
 
 export const loadCommands = async (): Promise<TLoadCommands[] | null> => {
   try {
-    const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
+    const rest = new REST({ version: '10' }).setToken(discordConfig.token);
     const commandsData = getCommands();
 
     const commands = (
@@ -47,7 +45,7 @@ export const loadCommands = async (): Promise<TLoadCommands[] | null> => {
     ).flat().filter(command => command) as (TLoadCommands | null)[];
 
     await rest.put(
-      Routes.applicationCommands(process.env.DISCORD_CLIENT_ID!),
+      Routes.applicationCommands(discordConfig.clientId),
       { body: commands.map((cmd) => cmd?.command?.data) }
     );
 

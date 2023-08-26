@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { discordConfig } from '../config';
 dotenv.config();
 
-export const profilePicture = process.env.DISCORD_BOT_PICTURE!;
+export const profilePicture = discordConfig.botPicture;
