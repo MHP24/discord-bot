@@ -8,11 +8,11 @@ export const command = {
       option
         .setName('limit')
         .setDescription('Limit of your roll')
-        .setRequired(true)
+        .setRequired(false)
     )),
   run: async (interaction: CommandInteraction) => {
-    const { value: limit } = interaction.options.get('limit')!;
-    const roll = Math.floor(Math.random() * Number(limit));
+    const { value: limit } = interaction.options.get('limit') ?? {};
+    const roll = Math.floor(Math.random() * Number(limit ?? 100));
     await interaction.reply(`${roll}`);
   }
 };
