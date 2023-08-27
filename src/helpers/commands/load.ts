@@ -24,7 +24,7 @@ const loadCommand = async (commandPath: string): Promise<TSlashCommand | null> =
   try {
     return await import(path.join(commandPath));
   } catch (error) {
-    console.log({ error });
+    console.error({ error });
     return null;
   }
 };

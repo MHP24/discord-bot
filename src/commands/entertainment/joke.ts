@@ -16,7 +16,7 @@ export const command = {
 
       const response = new EmbedBuilder()
         .setColor(0x0099FF)
-        .setTitle(`Haha! :joy_cat:\nlook at the joke #${id}`)
+        .setTitle(`Haha! :joy_cat:\nlook at joke #${id}`)
         .setDescription(type === 'single' ? (rest as TJokeSingle).joke
           : `${(rest as TJokeTwoPart).setup}\n${(rest as TJokeTwoPart).delivery}`
         ).setFooter({ text: category });
