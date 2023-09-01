@@ -1,4 +1,4 @@
-import { TSlashCommand } from './types';
+import { TQueue, TSlashCommand } from './types';
 import { enableCommands, loadCommands } from './helpers';
 import { client } from './client';
 import { Collection } from 'discord.js';
@@ -9,12 +9,14 @@ import { discordConfig } from './config';
   if (commands) {
     client.slashCommands = await enableCommands(commands);
   }
+  client.songQueue = new Map<string, TQueue>();
+
   client.login(discordConfig.token);
 })();
-
 
 declare module 'discord.js' {
   export interface Client {
     slashCommands: Collection<string, TSlashCommand>;
+    songQueue: Map<string, TQueue>;
   }
 }
