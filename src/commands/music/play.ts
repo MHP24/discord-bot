@@ -1,7 +1,6 @@
-import { createAudioResource, joinVoiceChannel } from '@discordjs/voice';
+import { createAudioPlayer, createAudioResource } from '@discordjs/voice';
 import { CommandInteraction, GuildMember, SlashCommandBuilder } from 'discord.js';
-import { audioPlayer } from '../../client';
-import ytdl from 'ytdl-core';
+import { songQueue, songs } from '../../controllers';
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -10,40 +9,59 @@ export const command = {
     .addStringOption(option => (
       option
         .setName('song')
-        .setDescription('song url')
+        .setDescription('search term')
         .setRequired(true)
     )),
   run: async (interaction: CommandInteraction) => {
     try {
-      console.log({ serverId: interaction.guildId });
       const voiceChannel = (interaction.member as GuildMember).voice.channel;
 
-      if (!voiceChannel) {
+      if (!voiceChannel || !interaction.guildId) {
         return await interaction
           .reply('You must to be in a voice channel to use this command!');
       }
+      const { guildId } = interaction;
 
-      const song = ytdl(`${interaction.options.get('song')!.value}`, {
-        filter: 'audioonly'
+      const searchTerm = `${(interaction.options.get('song') ?? {}).value}`;
+
+      const songData = await songs.getSongDetails(searchTerm);
+      if (!songData) return await interaction.reply('Invalid search');
+
+      console.log({ songData });
+
+      const song = songs.getResource(songData.url);
+      if (!song) return await interaction.reply('Failed obtaining the resource');
+      const resource = createAudioResource(song, {
+        metadata: {
+          guildId: interaction.guildId,
+        },
       });
 
-      if (!song) {
-        return await interaction.reply('404...');
+      const queue = songQueue.getQueue(interaction.guildId);
+      const audioPlayer = !queue ? createAudioPlayer() : queue.audioPlayer;
+
+      const { id, avatar, username } = interaction.user;
+
+      const songRequest = {
+        song: { ...songData, source: resource },
+        requestedBy: {
+          name: username,
+          thumbnail: `https://cdn.discordapp.com/avatars/${id}/${avatar}?size=1024`
+        }
+      };
+
+      if (!queue) {
+        songQueue.initQueue(guildId, audioPlayer, voiceChannel, songRequest);
+        audioPlayer.play(resource);
+        return await interaction.reply('$Playing the song...');
       }
 
-      joinVoiceChannel({
-        channelId: voiceChannel!.id,
-        guildId: voiceChannel!.guild.id,
-        adapterCreator: voiceChannel!.guild.voiceAdapterCreator,
-      }).subscribe(audioPlayer);
-
-      const resource = createAudioResource(song);
-      audioPlayer.play(resource);
-
-      return await interaction.reply('Sonando brijido chuchetumareeeeee');
+      songQueue.add(guildId, songRequest);
+      return await interaction.reply('$Song added');
     } catch (error) {
       console.error({ error });
       return await interaction.reply('Internal error, try again');
     }
   }
 };
+

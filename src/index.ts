@@ -1,4 +1,4 @@
-import { TQueue, TSlashCommand } from './types';
+import { TSongsQueue, TSlashCommand } from './types';
 import { enableCommands, loadCommands } from './helpers';
 import { client } from './client';
 import { Collection } from 'discord.js';
@@ -9,7 +9,7 @@ import { discordConfig } from './config';
   if (commands) {
     client.slashCommands = await enableCommands(commands);
   }
-  client.songQueue = new Map<string, TQueue>();
+  client.songQueue = new Map<string, TSongsQueue>();
 
   client.login(discordConfig.token);
 })();
@@ -17,6 +17,6 @@ import { discordConfig } from './config';
 declare module 'discord.js' {
   export interface Client {
     slashCommands: Collection<string, TSlashCommand>;
-    songQueue: Map<string, TQueue>;
+    songQueue: Map<string, TSongsQueue>;
   }
 }

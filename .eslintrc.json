@@ -43,6 +43,7 @@
         ],
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-explicit-any": "off",
-        "no-unsafe-finally": "off"
+        "no-unsafe-finally": "off",
+        "no-useless-escape": "off"
     }
 }
