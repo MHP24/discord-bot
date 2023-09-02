@@ -1,6 +1,7 @@
 import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import { getCommands } from '../../helpers';
 import { bot } from '../../mocks';
+import { discordConfig } from '../../config';
 
 export const command = {
   data: new SlashCommandBuilder().setName('help')
@@ -17,11 +18,11 @@ export const command = {
       const embed = new EmbedBuilder()
         .setTitle('DMiguelo available commands')
         .setThumbnail(bot.profilePicture)
-        .setColor(0x0099FF)
+        .setColor(discordConfig.botInfoEmbedColor)
         .setDescription('Don Miguelo is a cat who loves Coca-Cola\n written in typescript by `migueloooo`')
         .setFields(commands)
         .setFooter({ text: 'All commands must be used with /', iconURL: bot.profilePicture });
-      interaction.reply({ embeds: [embed] });
+      await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error({ error });
     }

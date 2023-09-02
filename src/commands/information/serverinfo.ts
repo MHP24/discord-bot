@@ -1,4 +1,6 @@
 import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { discordConfig } from '../../config';
+import { buildErrorEmbed } from '../../lib';
 
 export const command = {
   data: new SlashCommandBuilder().setName('serverinfo')
@@ -7,7 +9,9 @@ export const command = {
     try {
 
       if (!interaction.inGuild()) {
-        await interaction.reply('You must to be in a server to use this command');
+        await interaction.reply({
+          embeds: [buildErrorEmbed('You must to be in a server to use this command')]
+        });
         return;
       }
 
@@ -19,14 +23,14 @@ export const command = {
           if (!acc[type]) {
             acc[type] = 0;
           }
-          acc[type] += 1;
+          acc[type]++;
 
           return acc;
         }, {});
 
       const embed = new EmbedBuilder()
         .setTitle(`${guild!.name}`)
-        .setColor(0x0099FF)
+        .setColor(discordConfig.botInfoEmbedColor)
         .setFields([
           { name: 'Member count', value: members.guild.memberCount.toString(), inline: true },
           { name: 'Text channels', value: textChannels.toString(), inline: true },
@@ -43,10 +47,11 @@ export const command = {
       return await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error({ error });
-      const errorResponse = new EmbedBuilder()
-        .setColor(0xFF0000)
-        .setTitle('Failed getting server information :crying_cat_face:');
-      return await interaction.reply({ embeds: [errorResponse] });
+      return await interaction.reply({
+        embeds: [
+          buildErrorEmbed('Failed getting server information :crying_cat_face:')
+        ]
+      });
     }
   }
 };

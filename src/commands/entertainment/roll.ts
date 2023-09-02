@@ -11,8 +11,12 @@ export const command = {
         .setRequired(false)
     )),
   run: async (interaction: CommandInteraction) => {
-    const { value: limit } = interaction.options.get('limit') ?? {};
-    const roll = Math.floor(Math.random() * Number(limit ?? 100));
-    await interaction.reply(`${roll}`);
+    try {
+      const { value: limit } = interaction.options.get('limit') ?? {};
+      const roll = Math.floor(Math.random() * Number(limit ?? 100));
+      await interaction.reply(`${roll}`);
+    } catch (error) {
+      console.error({ error });
+    }
   }
 };

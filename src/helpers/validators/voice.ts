@@ -2,7 +2,7 @@ import { getVoiceConnection } from '@discordjs/voice';
 import { CommandInteraction, GuildMember } from 'discord.js';
 
 export const validateVoiceConnection = (
-  interaction: CommandInteraction, validateChannel = false
+  interaction: CommandInteraction, validateChannel = true
 ): string | null => {
 
   if (!interaction.inGuild()) return 'You must to be in a server to use this command';

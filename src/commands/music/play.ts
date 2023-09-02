@@ -16,7 +16,7 @@ export const command = {
   run: async (interaction: CommandInteraction) => {
     try {
 
-      const validation = voice.validateVoiceConnection(interaction);
+      const validation = voice.validateVoiceConnection(interaction, false);
 
       if (validation) return await interaction.reply(validation);
 
