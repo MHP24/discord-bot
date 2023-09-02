@@ -1,5 +1,5 @@
 import YouTube from 'youtube-sr';
-import ytdl from 'ytdl-core';
+import { stream } from 'play-dl';
 import { TSongDetails } from '../types';
 
 export const getSongDetails = async (search: string): Promise<TSongDetails | null> => {
@@ -22,9 +22,11 @@ export const getSongDetails = async (search: string): Promise<TSongDetails | nul
   }
 };
 
-export const getResource = (url: string) => {
+export const getResource = async (url: string) => {
   try {
-    return ytdl(url, { filter: 'audioonly' });
+    return (
+      await stream(url, { discordPlayerCompatibility: true }
+      )).stream;
   } catch (error) {
     return null;
   }

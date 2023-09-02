@@ -6,10 +6,36 @@ import { client } from '../client';
 import { TSongRequest, TSongsQueue } from '../types';
 import { VoiceBasedChannel } from 'discord.js';
 
+
 export const getQueue = (guildId: string): TSongsQueue | undefined => {
   return client.songQueue.get(guildId);
 };
 
+
+export const add = (guildId: string, song: TSongRequest) => {
+  const songQueue = getQueue(guildId);
+  client.songQueue.set(guildId, {
+    ...songQueue!,
+    currentSongIndex: songQueue?.currentSongIndex ?? 0,
+    songs: [...(songQueue?.songs ?? []), song]
+  });
+};
+
+
+export const playNext = (guildId: string) => {
+  const songQueue = getQueue(guildId);
+  const { songs = [] } = songQueue ?? {};
+  songs.shift();
+  if (songQueue && songs.length) {
+    songQueue.audioPlayer.play(songs[0].song.source);
+    return;
+  }
+
+
+
+};
+
+//TODO: Refactor this and remove the eventlistener from init fn
 export const initQueue = (
   guildId: string, audioPlayer: AudioPlayer,
   voiceChannel: VoiceBasedChannel,
@@ -25,9 +51,11 @@ export const initQueue = (
     audioPlayer.on('stateChange', (
       oldState: AudioPlayerState, newState: AudioPlayerState
     ) => {
+      console.log({ oldState, newState });
       if (newState.status === AudioPlayerStatus.Idle
         && oldState.status !== AudioPlayerStatus.Idle) {
-        console.log(oldState.resource.metadata);
+        const { guildId } = oldState.resource.metadata as any;
+        playNext(guildId);
       }
     });
 
@@ -40,26 +68,4 @@ export const initQueue = (
     console.error({ error });
   }
 
-};
-
-export const add = (guildId: string, song: TSongRequest) => {
-  const songQueue = getQueue(guildId);
-  client.songQueue.set(guildId, {
-    ...songQueue!,
-    currentSongIndex: songQueue?.currentSongIndex ?? 0,
-    songs: [...(songQueue?.songs ?? []), song]
-  });
-
-  console.log(getQueue(guildId));
-
-};
-
-export const playNext = (guildId: string) => {
-  const songQueue = getQueue(guildId);
-  if (songQueue && songQueue.currentSongIndex! < (songQueue.songs!.length - 1)) {
-    client.songQueue.set(guildId, {
-      ...songQueue,
-      currentSongIndex: songQueue.currentSongIndex! + 1,
-    });
-  }
 };

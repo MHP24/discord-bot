@@ -1,4 +1,4 @@
-import { createAudioPlayer, createAudioResource } from '@discordjs/voice';
+import { StreamType, createAudioPlayer, createAudioResource } from '@discordjs/voice';
 import { CommandInteraction, GuildMember, SlashCommandBuilder } from 'discord.js';
 import { songQueue, songs } from '../../controllers';
 
@@ -27,14 +27,13 @@ export const command = {
       const songData = await songs.getSongDetails(searchTerm);
       if (!songData) return await interaction.reply('Invalid search');
 
-      console.log({ songData });
-
-      const song = songs.getResource(songData.url);
+      const song = await songs.getResource(songData.url);
       if (!song) return await interaction.reply('Failed obtaining the resource');
       const resource = createAudioResource(song, {
         metadata: {
           guildId: interaction.guildId,
         },
+        inputType: StreamType.Arbitrary
       });
 
       const queue = songQueue.getQueue(interaction.guildId);
@@ -53,11 +52,11 @@ export const command = {
       if (!queue) {
         songQueue.initQueue(guildId, audioPlayer, voiceChannel, songRequest);
         audioPlayer.play(resource);
-        return await interaction.reply('$Playing the song...');
+        return await interaction.reply(`[Playing] ${songData.title}`);
       }
 
       songQueue.add(guildId, songRequest);
-      return await interaction.reply('$Song added');
+      return await interaction.reply(`[Added] ${songData.title}`);
     } catch (error) {
       console.error({ error });
       return await interaction.reply('Internal error, try again');
