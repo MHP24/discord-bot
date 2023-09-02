@@ -29,6 +29,7 @@ export const command = {
 
       const song = await songs.getResource(songData.url);
       if (!song) return await interaction.reply('Failed obtaining the resource');
+
       const resource = createAudioResource(song, {
         metadata: {
           guildId: interaction.guildId,

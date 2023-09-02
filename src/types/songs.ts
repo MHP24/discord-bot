@@ -1,4 +1,4 @@
-import { AudioPlayer, AudioResource } from '@discordjs/voice';
+import { AudioPlayer, AudioResource, VoiceConnection } from '@discordjs/voice';
 
 export type TSongDetails = {
   id: string,
@@ -26,7 +26,7 @@ export type TSongRequest = {
 }
 
 export type TSongsQueue = {
-  currentSongIndex?: number,
   audioPlayer: AudioPlayer,
+  audioConnection: VoiceConnection,
   songs?: TSongRequest[]
 }

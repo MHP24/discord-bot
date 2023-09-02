@@ -16,9 +16,16 @@ export const add = (guildId: string, song: TSongRequest) => {
   const songQueue = getQueue(guildId);
   client.songQueue.set(guildId, {
     ...songQueue!,
-    currentSongIndex: songQueue?.currentSongIndex ?? 0,
     songs: [...(songQueue?.songs ?? []), song]
   });
+};
+
+
+export const remove = (guildId: string) => {
+  const songQueue = getQueue(guildId);
+  songQueue?.audioConnection.disconnect();
+  songQueue?.audioConnection.destroy();
+  client.songQueue.delete(guildId);
 };
 
 
@@ -30,9 +37,7 @@ export const playNext = (guildId: string) => {
     songQueue.audioPlayer.play(songs[0].song.source);
     return;
   }
-
-
-
+  remove(guildId);
 };
 
 //TODO: Refactor this and remove the eventlistener from init fn
@@ -42,11 +47,13 @@ export const initQueue = (
   song: TSongRequest
 ) => {
   try {
-    joinVoiceChannel({
+    const audioConnection = joinVoiceChannel({
       channelId: voiceChannel.id,
       guildId: voiceChannel.guild.id,
       adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-    }).subscribe(audioPlayer);
+    });
+
+    audioConnection.subscribe(audioPlayer);
 
     audioPlayer.on('stateChange', (
       oldState: AudioPlayerState, newState: AudioPlayerState
@@ -60,6 +67,7 @@ export const initQueue = (
     });
 
     client.songQueue.set(guildId, {
+      audioConnection,
       audioPlayer
     });
 
