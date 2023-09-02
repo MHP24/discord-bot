@@ -28,6 +28,7 @@ export const getResource = async (url: string) => {
       await stream(url, { discordPlayerCompatibility: true }
       )).stream;
   } catch (error) {
+    console.error({ error });
     return null;
   }
 }; 

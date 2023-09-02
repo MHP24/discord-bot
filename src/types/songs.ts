@@ -11,7 +11,7 @@ export type TSongDetails = {
 
 export type TSong = {
   source: AudioResource<{
-    guildId: string;
+    guildId: string | null;
   }>
 } & TSongDetails
 

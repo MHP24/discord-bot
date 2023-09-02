@@ -1,6 +1,7 @@
 import { StreamType, createAudioPlayer, createAudioResource } from '@discordjs/voice';
 import { CommandInteraction, GuildMember, SlashCommandBuilder } from 'discord.js';
 import { songQueue, songs } from '../../controllers';
+import { voice } from '../../helpers/validators';
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -14,14 +15,13 @@ export const command = {
     )),
   run: async (interaction: CommandInteraction) => {
     try {
-      const voiceChannel = (interaction.member as GuildMember).voice.channel;
 
-      if (!voiceChannel || !interaction.guildId) {
-        return await interaction
-          .reply('You must to be in a voice channel to use this command!');
-      }
-      const { guildId } = interaction;
+      const validation = voice.validateVoiceConnection(interaction);
 
+      if (validation) return await interaction.reply(validation);
+
+      const voiceChannel = (interaction.member as GuildMember).voice.channel!;
+      const { guildId = '' } = interaction as { guildId: string };
       const searchTerm = `${(interaction.options.get('song') ?? {}).value}`;
 
       const songData = await songs.getSongDetails(searchTerm);
@@ -37,7 +37,7 @@ export const command = {
         inputType: StreamType.Arbitrary
       });
 
-      const queue = songQueue.getQueue(interaction.guildId);
+      const queue = songQueue.getQueue(guildId);
       const audioPlayer = !queue ? createAudioPlayer() : queue.audioPlayer;
 
       const { id, avatar, username } = interaction.user;
@@ -51,9 +51,19 @@ export const command = {
       };
 
       if (!queue) {
-        songQueue.initQueue(guildId, audioPlayer, voiceChannel, songRequest);
+        songQueue.initQueue(
+          guildId,
+          audioPlayer,
+          voiceChannel,
+          songRequest
+        );
         audioPlayer.play(resource);
         return await interaction.reply(`[Playing] ${songData.title}`);
+      }
+
+      if (queue.audioConnection.joinConfig.channelId
+        !== voiceChannel.id) {
+        songQueue.updateChannel(guildId, voiceChannel);
       }
 
       songQueue.add(guildId, songRequest);

@@ -58,7 +58,6 @@ export const initQueue = (
     audioPlayer.on('stateChange', (
       oldState: AudioPlayerState, newState: AudioPlayerState
     ) => {
-      console.log({ oldState, newState });
       if (newState.status === AudioPlayerStatus.Idle
         && oldState.status !== AudioPlayerStatus.Idle) {
         const { guildId } = oldState.resource.metadata as any;
@@ -76,4 +75,19 @@ export const initQueue = (
     console.error({ error });
   }
 
+};
+
+export const updateChannel = (
+  guildId: string, voiceChannel: VoiceBasedChannel
+) => {
+  const songQueue = client.songQueue.get(guildId);
+  if (songQueue) {
+    const audioConnection = joinVoiceChannel({
+      channelId: voiceChannel.id,
+      guildId: voiceChannel.guild.id,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+    });
+    audioConnection.subscribe(songQueue.audioPlayer);
+    client.songQueue.set(guildId, { ...songQueue, audioConnection });
+  }
 };
