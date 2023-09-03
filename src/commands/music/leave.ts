@@ -1,23 +1,27 @@
-import { CommandInteraction, GuildMember, SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { songQueue } from '../../controllers';
+import { voice } from '../../helpers/validators';
+import { buildErrorEmbed } from '../../lib';
 
 export const command = {
   data: new SlashCommandBuilder().setName('leave').setDescription('Disconnect DJ from voice'),
   run: async (interaction: CommandInteraction) => {
     try {
-      const voiceChannel = (interaction.member as GuildMember).voice.channel;
+      const validation = voice.validateVoiceConnection(interaction);
+      if (validation) return (
+        await interaction.reply(({
+          embeds: [buildErrorEmbed(validation)]
+        }
+        ))
+      );
+      songQueue.remove(interaction.guildId!);
 
-      if (!voiceChannel || !interaction.guildId) {
-        return await interaction
-          .reply('You must to be in a voice channel to use this command!');
-      }
-
-      songQueue.remove(interaction.guildId);
-
-      return await interaction.reply('Bye!');
+      return await interaction.reply('Bye! :hand_splayed:');
     } catch (error) {
       console.error({ error });
-      return await interaction.reply('Internal error, try again');
+      return await interaction.editReply({
+        embeds: [buildErrorEmbed('Internal error, try again')]
+      });
     }
   }
 };
