@@ -1,6 +1,6 @@
 import { StreamType, createAudioPlayer, createAudioResource } from '@discordjs/voice';
 import { CommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder } from 'discord.js';
-import { songQueue, songs } from '../../controllers';
+import { songTrack, songs } from '../../controllers';
 import { voice } from '../../helpers/validators';
 import { buildErrorEmbed } from '../../lib';
 import { discordConfig } from '../../config';
@@ -50,7 +50,7 @@ export const command = {
         inputType: StreamType.Arbitrary
       });
 
-      const queue = songQueue.getQueue(guildId);
+      const queue = songTrack.getQueue(guildId);
       const audioPlayer = !queue ? createAudioPlayer() : queue.audioPlayer;
 
       const { id, avatar, username } = interaction.user;
@@ -73,7 +73,7 @@ export const command = {
 
 
       if (!queue) {
-        songQueue.initQueue(
+        songTrack.initQueue(
           guildId,
           audioPlayer,
           voiceChannel,
@@ -87,10 +87,10 @@ export const command = {
 
       if (queue.audioConnection.joinConfig.channelId
         !== voiceChannel.id) {
-        songQueue.updateChannel(guildId, voiceChannel);
+        songTrack.updateChannel(guildId, voiceChannel);
       }
 
-      songQueue.add(guildId, songRequest);
+      songTrack.add(guildId, songRequest);
       return await interaction.editReply({
         embeds: [embed.setTitle(':notes: Added')]
       });

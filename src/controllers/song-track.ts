@@ -6,13 +6,13 @@ import { onStateChange } from '../events';
 
 
 export const getQueue = (guildId: string): TSongsQueue | undefined => {
-  return client.songQueue.get(guildId);
+  return client.guildTracks.get(guildId);
 };
 
 
 export const add = (guildId: string, song: TSongRequest) => {
   const songQueue = getQueue(guildId);
-  client.songQueue.set(guildId, {
+  client.guildTracks.set(guildId, {
     ...songQueue!,
     songs: [...(songQueue?.songs ?? []), song]
   });
@@ -23,7 +23,7 @@ export const remove = (guildId: string) => {
   const songQueue = getQueue(guildId);
   songQueue?.audioConnection.disconnect();
   songQueue?.audioConnection.destroy();
-  client.songQueue.delete(guildId);
+  client.guildTracks.delete(guildId);
 };
 
 
@@ -53,7 +53,7 @@ export const initQueue = (
     audioConnection.subscribe(audioPlayer);
     onStateChange(audioPlayer);
 
-    client.songQueue.set(guildId, {
+    client.guildTracks.set(guildId, {
       audioConnection,
       audioPlayer
     });
@@ -68,7 +68,7 @@ export const initQueue = (
 export const updateChannel = (
   guildId: string, voiceChannel: VoiceBasedChannel
 ) => {
-  const songQueue = client.songQueue.get(guildId);
+  const songQueue = client.guildTracks.get(guildId);
   if (songQueue) {
     const audioConnection = joinVoiceChannel({
       channelId: voiceChannel.id,
@@ -76,6 +76,6 @@ export const updateChannel = (
       adapterCreator: voiceChannel.guild.voiceAdapterCreator,
     });
     audioConnection.subscribe(songQueue.audioPlayer);
-    client.songQueue.set(guildId, { ...songQueue, audioConnection });
+    client.guildTracks.set(guildId, { ...songQueue, audioConnection });
   }
 };

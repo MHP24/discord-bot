@@ -9,7 +9,7 @@ import { discordConfig } from './config';
   if (commands) {
     client.slashCommands = await enableCommands(commands);
   }
-  client.songQueue = new Map<string, TSongsQueue>();
+  client.guildTracks = new Map<string, TSongsQueue>();
 
   client.login(discordConfig.token);
 })();
@@ -17,6 +17,6 @@ import { discordConfig } from './config';
 declare module 'discord.js' {
   export interface Client {
     slashCommands: Collection<string, TSlashCommand>;
-    songQueue: Map<string, TSongsQueue>;
+    guildTracks: Map<string, TSongsQueue>;
   }
 }

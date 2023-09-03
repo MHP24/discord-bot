@@ -1,5 +1,5 @@
 import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
-import { songQueue } from '../../controllers';
+import { songTrack } from '../../controllers';
 import { voice } from '../../helpers/validators';
 import { buildErrorEmbed } from '../../lib';
 
@@ -15,7 +15,7 @@ export const command = {
         ))
       );
 
-      const queue = songQueue.getQueue(interaction.guildId!);
+      const queue = songTrack.getQueue(interaction.guildId!);
       queue?.audioPlayer.stop();
       queue?.audioPlayer.unpause();
 
