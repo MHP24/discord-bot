@@ -1,10 +1,8 @@
-import {
-  AudioPlayer, AudioPlayerState,
-  AudioPlayerStatus, joinVoiceChannel
-} from '@discordjs/voice';
+import { AudioPlayer, joinVoiceChannel } from '@discordjs/voice';
 import { client } from '../client';
 import { TSongRequest, TSongsQueue } from '../types';
 import { VoiceBasedChannel } from 'discord.js';
+import { onStateChange } from '../events';
 
 
 export const getQueue = (guildId: string): TSongsQueue | undefined => {
@@ -40,11 +38,10 @@ export const playNext = (guildId: string) => {
   remove(guildId);
 };
 
-//TODO: Refactor this and remove the eventlistener from init fn
+
 export const initQueue = (
   guildId: string, audioPlayer: AudioPlayer,
-  voiceChannel: VoiceBasedChannel,
-  song: TSongRequest
+  voiceChannel: VoiceBasedChannel, song: TSongRequest
 ) => {
   try {
     const audioConnection = joinVoiceChannel({
@@ -54,16 +51,7 @@ export const initQueue = (
     });
 
     audioConnection.subscribe(audioPlayer);
-
-    audioPlayer.on('stateChange', (
-      oldState: AudioPlayerState, newState: AudioPlayerState
-    ) => {
-      if (newState.status === AudioPlayerStatus.Idle
-        && oldState.status !== AudioPlayerStatus.Idle) {
-        const { guildId } = oldState.resource.metadata as any;
-        playNext(guildId);
-      }
-    });
+    onStateChange(audioPlayer);
 
     client.songQueue.set(guildId, {
       audioConnection,

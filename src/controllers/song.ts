@@ -13,7 +13,7 @@ export const getSongDetails = async (search: string): Promise<TSongDetails | nul
         title: data.title!,
         duration: data.duration,
         author: data.channel?.name ?? '',
-        thumbnail: data.url
+        thumbnail: data.thumbnail?.url ?? ''
       }
       : null;
   } catch (error) {

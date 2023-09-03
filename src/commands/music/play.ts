@@ -1,7 +1,9 @@
 import { StreamType, createAudioPlayer, createAudioResource } from '@discordjs/voice';
-import { CommandInteraction, GuildMember, SlashCommandBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder } from 'discord.js';
 import { songQueue, songs } from '../../controllers';
 import { voice } from '../../helpers/validators';
+import { buildErrorEmbed } from '../../lib';
+import { discordConfig } from '../../config';
 
 export const command = {
   data: new SlashCommandBuilder()
@@ -15,20 +17,31 @@ export const command = {
     )),
   run: async (interaction: CommandInteraction) => {
     try {
-
       const validation = voice.validateVoiceConnection(interaction, false);
 
-      if (validation) return await interaction.reply(validation);
+      if (validation) return await interaction.reply({
+        embeds: [buildErrorEmbed(validation)]
+      });
+
+      await interaction.deferReply();
 
       const voiceChannel = (interaction.member as GuildMember).voice.channel!;
       const { guildId = '' } = interaction as { guildId: string };
       const searchTerm = `${(interaction.options.get('song') ?? {}).value}`;
 
       const songData = await songs.getSongDetails(searchTerm);
-      if (!songData) return await interaction.reply('Invalid search');
+      if (!songData) return (
+        await interaction.reply({
+          embeds: [buildErrorEmbed('Invalid search')]
+        })
+      );
 
       const song = await songs.getResource(songData.url);
-      if (!song) return await interaction.reply('Failed obtaining the resource');
+      if (!song) return (
+        await interaction.reply({
+          embeds: [buildErrorEmbed('Failed obtaining the resource')]
+        })
+      );
 
       const resource = createAudioResource(song, {
         metadata: {
@@ -50,6 +63,15 @@ export const command = {
         }
       };
 
+      const embed = new EmbedBuilder()
+        .setThumbnail(songData.thumbnail)
+        .setColor(discordConfig.botInfoEmbedColor)
+        .setFooter({
+          text: `Requested by ${username}`,
+          iconURL: songRequest.requestedBy.thumbnail
+        }).setDescription(`${songData.title}`);
+
+
       if (!queue) {
         songQueue.initQueue(
           guildId,
@@ -58,7 +80,9 @@ export const command = {
           songRequest
         );
         audioPlayer.play(resource);
-        return await interaction.reply(`[Playing] ${songData.title}`);
+        return await interaction.editReply({
+          embeds: [embed.setTitle(':notes: Playing')]
+        });
       }
 
       if (queue.audioConnection.joinConfig.channelId
@@ -67,11 +91,15 @@ export const command = {
       }
 
       songQueue.add(guildId, songRequest);
-      return await interaction.reply(`[Added] ${songData.title}`);
+      return await interaction.editReply({
+        embeds: [embed.setTitle(':notes: Added')]
+      });
+
     } catch (error) {
       console.error({ error });
-      return await interaction.reply('Internal error, try again');
+      return await interaction.editReply({
+        embeds: [buildErrorEmbed('Internal error, try again')]
+      });
     }
   }
 };
-
