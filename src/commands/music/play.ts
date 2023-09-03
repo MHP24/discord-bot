@@ -73,7 +73,7 @@ export const command = {
 
 
       if (!queue) {
-        songTrack.initQueue(
+        songTrack.initialize(
           guildId,
           audioPlayer,
           voiceChannel,

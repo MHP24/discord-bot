@@ -39,7 +39,7 @@ export const playNext = (guildId: string) => {
 };
 
 
-export const initQueue = (
+export const initialize = (
   guildId: string, audioPlayer: AudioPlayer,
   voiceChannel: VoiceBasedChannel, song: TSongRequest
 ) => {
