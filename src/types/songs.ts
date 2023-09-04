@@ -7,12 +7,6 @@ export type TSongDetails = {
   thumbnail: string
 }
 
-// export type TSong = {
-//   source: AudioResource<{
-//     guildId: string | null;
-//   }>
-// } & TSongDetails
-
 export type TSongUser = {
   name: string,
   thumbnail: string
