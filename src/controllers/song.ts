@@ -1,19 +1,17 @@
-import YouTube from 'youtube-sr';
-import { stream } from 'play-dl';
+import { stream, search } from 'play-dl';
 import { TSongDetails } from '../types';
 
-export const getSongDetails = async (search: string): Promise<TSongDetails | null> => {
+export const getSongDetails = async (searchTerm: string): Promise<TSongDetails | null> => {
   try {
-    const data = await YouTube.searchOne(search);
+    const [data] = await search(searchTerm, { limit: 1 });
+    const { url, title, durationRaw, thumbnails } = data ?? {};
 
     return data ?
       {
-        id: data.id!,
-        url: `https://www.youtube.com/watch?v=${data.id}`,
-        title: data.title!,
-        duration: data.duration,
-        author: data.channel?.name ?? '',
-        thumbnail: data.thumbnail?.url ?? ''
+        url: url,
+        title: title!,
+        duration: durationRaw,
+        thumbnail: thumbnails[0].url
       }
       : null;
   } catch (error) {
@@ -25,7 +23,7 @@ export const getSongDetails = async (search: string): Promise<TSongDetails | nul
 export const getResource = async (url: string) => {
   try {
     return (
-      await stream(url, { discordPlayerCompatibility: true }
+      await stream(url, { discordPlayerCompatibility: true, quality: 2 }
       )).stream;
   } catch (error) {
     console.error({ error });

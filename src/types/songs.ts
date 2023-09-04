@@ -1,11 +1,9 @@
 import { AudioPlayer, AudioResource, VoiceConnection } from '@discordjs/voice';
 
 export type TSongDetails = {
-  id: string,
   url: string,
   title: string,
-  duration: number,
-  author: string,
+  duration: string,
   thumbnail: string
 }
 
