@@ -1,8 +1,9 @@
-import { AudioPlayer, joinVoiceChannel } from '@discordjs/voice';
+import { AudioPlayer, StreamType, createAudioResource, joinVoiceChannel } from '@discordjs/voice';
 import { client } from '../client';
 import { TSongRequest, TSongsQueue } from '../types';
 import { VoiceBasedChannel } from 'discord.js';
 import { onStateChange } from '../events';
+import { songsController } from '.';
 
 
 export const getQueue = (guildId: string): TSongsQueue | undefined => {
@@ -27,15 +28,28 @@ export const remove = (guildId: string) => {
 };
 
 
-export const playNext = (guildId: string) => {
-  const songQueue = getQueue(guildId);
-  const { songs = [] } = songQueue ?? {};
-  songs.shift();
-  if (songQueue && songs.length) {
-    songQueue.audioPlayer.play(songs[0].song.source);
-    return;
+export const playNext = async (guildId: string) => {
+  try {
+    const songQueue = getQueue(guildId);
+    const { songs = [] } = songQueue ?? {};
+    songs.shift();
+
+    if (songQueue && songs.length) {
+      const song = await songsController.getResource(songs[0].song.url);
+      song && songQueue.audioPlayer.play(
+        createAudioResource(song, {
+          metadata: {
+            guildId: guildId,
+          },
+          inputType: StreamType.Arbitrary
+        }));
+      return;
+    }
+
+    remove(guildId);
+  } catch (error) {
+    console.error({ error });
   }
-  remove(guildId);
 };
 
 

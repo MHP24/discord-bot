@@ -22,9 +22,8 @@ export const getSongDetails = async (searchTerm: string): Promise<TSongDetails |
 
 export const getResource = async (url: string) => {
   try {
-    return (
-      await stream(url, { discordPlayerCompatibility: true, quality: 2 }
-      )).stream;
+    const source = await stream(url, { discordPlayerCompatibility: true, quality: 2 });
+    return source.stream;
   } catch (error) {
     console.error({ error });
     return null;

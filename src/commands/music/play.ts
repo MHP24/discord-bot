@@ -1,6 +1,6 @@
 import { StreamType, createAudioPlayer, createAudioResource } from '@discordjs/voice';
 import { CommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder } from 'discord.js';
-import { songTrack, songs } from '../../controllers';
+import { songTrack, songsController } from '../../controllers';
 import { voice } from '../../helpers/validators';
 import { buildErrorEmbed } from '../../lib';
 import { discordConfig } from '../../config';
@@ -29,26 +29,12 @@ export const command = {
       const { guildId = '' } = interaction as { guildId: string };
       const searchTerm = `${(interaction.options.get('song') ?? {}).value}`;
 
-      const songData = await songs.getSongDetails(searchTerm);
+      const songData = await songsController.getSongDetails(searchTerm);
       if (!songData) return (
         await interaction.reply({
           embeds: [buildErrorEmbed('Invalid search')]
         })
       );
-
-      const song = await songs.getResource(songData.url);
-      if (!song) return (
-        await interaction.reply({
-          embeds: [buildErrorEmbed('Failed obtaining the resource')]
-        })
-      );
-
-      const resource = createAudioResource(song, {
-        metadata: {
-          guildId: interaction.guildId,
-        },
-        inputType: StreamType.Arbitrary
-      });
 
       const queue = songTrack.getQueue(guildId);
       const audioPlayer = !queue ? createAudioPlayer() : queue.audioPlayer;
@@ -56,7 +42,7 @@ export const command = {
       const { id, avatar, username } = interaction.user;
 
       const songRequest = {
-        song: { ...songData, source: resource },
+        song: songData,
         requestedBy: {
           name: username,
           thumbnail: `https://cdn.discordapp.com/avatars/${id}/${avatar}?size=1024`
@@ -79,7 +65,21 @@ export const command = {
           voiceChannel,
           songRequest
         );
-        audioPlayer.play(resource);
+
+        const song = await songsController.getResource(songData.url);
+        if (!song) return (
+          await interaction.reply({
+            embeds: [buildErrorEmbed('Failed obtaining the resource')]
+          })
+        );
+
+        audioPlayer.play(createAudioResource(song, {
+          metadata: {
+            guildId: interaction.guildId,
+          },
+          inputType: StreamType.Arbitrary
+        }));
+
         return await interaction.editReply({
           embeds: [embed.setTitle(':notes: Playing')]
         });

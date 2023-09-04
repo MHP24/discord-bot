@@ -1,4 +1,4 @@
-import { AudioPlayer, AudioResource, VoiceConnection } from '@discordjs/voice';
+import { AudioPlayer, VoiceConnection } from '@discordjs/voice';
 
 export type TSongDetails = {
   url: string,
@@ -7,11 +7,11 @@ export type TSongDetails = {
   thumbnail: string
 }
 
-export type TSong = {
-  source: AudioResource<{
-    guildId: string | null;
-  }>
-} & TSongDetails
+// export type TSong = {
+//   source: AudioResource<{
+//     guildId: string | null;
+//   }>
+// } & TSongDetails
 
 export type TSongUser = {
   name: string,
@@ -19,7 +19,7 @@ export type TSongUser = {
 }
 
 export type TSongRequest = {
-  song: TSong,
+  song: TSongDetails,
   requestedBy: TSongUser
 }
 
