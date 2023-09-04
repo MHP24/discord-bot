@@ -1,9 +1,13 @@
-import { AudioPlayer, StreamType, createAudioResource, joinVoiceChannel } from '@discordjs/voice';
+import {
+  AudioPlayer, StreamType,
+  createAudioResource, joinVoiceChannel
+} from '@discordjs/voice';
 import { client } from '../client';
 import { TSongRequest, TSongsQueue } from '../types';
-import { VoiceBasedChannel } from 'discord.js';
+import { EmbedBuilder, TextBasedChannel, VoiceBasedChannel } from 'discord.js';
 import { onStateChange } from '../events';
 import { songsController } from '.';
+import { discordConfig } from '../config';
 
 
 export const getQueue = (guildId: string): TSongsQueue | undefined => {
@@ -27,7 +31,7 @@ export const remove = (guildId: string) => {
   client.guildTracks.delete(guildId);
 };
 
-
+//TODO: Refactor embed logic from here and play command
 export const playNext = async (guildId: string) => {
   try {
     const songQueue = getQueue(guildId);
@@ -35,14 +39,38 @@ export const playNext = async (guildId: string) => {
     songs.shift();
 
     if (songQueue && songs.length) {
-      const song = await songsController.getResource(songs[0].song.url);
-      song && songQueue.audioPlayer.play(
-        createAudioResource(song, {
-          metadata: {
-            guildId: guildId,
-          },
-          inputType: StreamType.Arbitrary
-        }));
+      const [songData] = songs;
+      const {
+        song: { title, url, thumbnail, duration },
+        requestedBy: { name, thumbnail: userthumbnail }
+      } = songData;
+      const song = await songsController.getResource(url);
+
+      if (song) {
+        songQueue.audioPlayer.play(
+          createAudioResource(song, {
+            metadata: {
+              guildId: guildId,
+            },
+            inputType: StreamType.Arbitrary
+          })
+        );
+
+        const embed = new EmbedBuilder()
+          .setThumbnail(thumbnail)
+          .setColor(discordConfig.botInfoEmbedColor)
+          .setDescription(`${title}`)
+          .addFields(
+            { name: 'Duration', value: duration }
+          ).setFooter({
+            text: `Requested by ${name}`,
+            iconURL: userthumbnail
+          });
+
+        await songQueue.channel?.send({
+          embeds: [embed.setTitle(':notes: Now playing')]
+        });
+      }
       return;
     }
 
@@ -52,10 +80,10 @@ export const playNext = async (guildId: string) => {
   }
 };
 
-
+//TODO: recieve and object instead each param
 export const initialize = (
   guildId: string, audioPlayer: AudioPlayer,
-  voiceChannel: VoiceBasedChannel, song: TSongRequest
+  channel: TextBasedChannel | null, voiceChannel: VoiceBasedChannel, song: TSongRequest
 ) => {
   try {
     const audioConnection = joinVoiceChannel({
@@ -69,7 +97,8 @@ export const initialize = (
 
     client.guildTracks.set(guildId, {
       audioConnection,
-      audioPlayer
+      audioPlayer,
+      channel
     });
 
     add(guildId, song);

@@ -52,16 +52,20 @@ export const command = {
       const embed = new EmbedBuilder()
         .setThumbnail(songData.thumbnail)
         .setColor(discordConfig.botInfoEmbedColor)
-        .setFooter({
+        .setDescription(`${songData.title}`)
+        .addFields(
+          { name: 'Duration', value: songData.duration }
+        ).setFooter({
           text: `Requested by ${username}`,
           iconURL: songRequest.requestedBy.thumbnail
-        }).setDescription(`${songData.title}`);
+        });
 
 
       if (!queue) {
         songTrack.initialize(
           guildId,
           audioPlayer,
+          interaction.channel,
           voiceChannel,
           songRequest
         );

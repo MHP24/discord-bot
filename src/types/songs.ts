@@ -1,4 +1,5 @@
 import { AudioPlayer, VoiceConnection } from '@discordjs/voice';
+import { TextBasedChannel } from 'discord.js';
 
 export type TSongDetails = {
   url: string,
@@ -20,5 +21,6 @@ export type TSongRequest = {
 export type TSongsQueue = {
   audioPlayer: AudioPlayer,
   audioConnection: VoiceConnection,
+  channel: TextBasedChannel | null;
   songs?: TSongRequest[]
 }
