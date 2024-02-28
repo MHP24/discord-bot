@@ -1,26 +1,24 @@
 # Dependencies for build
-FROM node:18.19-alpine as deps
+FROM node:20.11.1-alpine3.19 as deps
 WORKDIR /app
 COPY . ./
-RUN npm install
+RUN yarn
 
 
 # Build distribution
-FROM node:18.19-alpine as build
+FROM node:20.11.1-alpine3.19 as build
 WORKDIR /app
 COPY . .
 COPY --from=deps /app/node_modules/ ./node_modules
-RUN npm run build
+RUN yarn build
 
 
 # Runner
-FROM node:18.19-alpine as runner
+FROM node:20.11.1-alpine3.19 as runner
 WORKDIR /app
 COPY --from=build /app/dist/ ./dist
 COPY --from=deps /app/node_modules/ ./node_modules
-# FFMpeg required for audio player
-RUN apk add --no-cache ffmpeg
 COPY package.json package.json
 
 # Cmd start
-CMD [ "npm", "run", "start:prod" ]
+CMD [ "yarn", "start:prod" ]
