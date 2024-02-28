@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  bot:
+    container_name: dmiguelo_bot
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - dmiguelo_bot
+networks:
+  dmiguelo_bot:
+    external: false
