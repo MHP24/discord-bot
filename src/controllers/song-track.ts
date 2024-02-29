@@ -93,6 +93,7 @@ export const initialize = (
     });
 
     audioConnection.subscribe(audioPlayer);
+    //@ts-ignore
     onStateChange(audioPlayer);
 
     client.guildTracks.set(guildId, {
