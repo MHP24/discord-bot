@@ -2,7 +2,7 @@
 FROM node:20.11.1-alpine3.19 as deps
 WORKDIR /app
 COPY . ./
-RUN yarn
+RUN yarn --frozen-lockfile
 
 
 # Build distribution
